@@ -43,7 +43,7 @@ imshow(coloredObjectsMask, []);
 %Getting rid of excess pixels, smoothing borders, and filling regions
 smallestAcceptableArea = 100;
 coloredObjectsMask = uint8(bwareaopen(coloredObjectsMask, smallestAcceptableArea));
-structuringElement = strel('disk', 5);
+structuringElement = strel('disk', 4);
 coloredObjectsMask = imclose(coloredObjectsMask, structuringElement);
 coloredObjectsMask = imfill(logical(coloredObjectsMask), 'holes');
     
@@ -62,7 +62,7 @@ imshow(binaryHand);
 
 % mkdir('Images');
 answer = inputdlg('What do you want to call this image?');
-location = strcat('Images/', answer{1});
-imwrite(binaryHand, location, 'jpg');
+location = '
+imwrite(binaryHand, 'Images/binary_key9', 'jpg');
 
 clear vid;
