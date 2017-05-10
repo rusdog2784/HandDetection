@@ -5,15 +5,6 @@ clc;
 fontSize = 14;
 run = true;
 
-%Thresholds for blue glove color
-hueThresholdLow = 0.4;
-hueThresholdHigh = 0.6;
-saturationThresholdLow = 0.2;
-saturationThresholdHigh = 0.7;
-valueThresholdLow = 0.6;
-valueThresholdHigh = 1.0;
-%End
-
 %Create the webcam object
 vid = webcam(1);
 pause(2);

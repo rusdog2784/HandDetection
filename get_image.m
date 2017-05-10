@@ -1,5 +1,14 @@
 preview(vid);
 
+%Thresholds for blue glove color
+hueThresholdLow = 0.4;
+hueThresholdHigh = 0.6;
+saturationThresholdLow = 0.2;
+saturationThresholdHigh = 0.7;
+valueThresholdLow = 0.6;
+valueThresholdHigh = 1.0;
+%End
+
 % get image sub function
 choice = questdlg('Press "capture" when you are ready to take a photo.', 'Take Picture', 'Capture', 'Cancel', 'Capture');
 switch choice
