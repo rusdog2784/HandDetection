@@ -17,45 +17,23 @@ valueThresholdHigh = 1.0;
 %Create the webcam object
 vid = webcam(1);
 pause(2);
-preview(vid);
 
-choice = questdlg('Press "capture" when you are ready to take a photo.', 'Take Picture', 'Capture', 'Cancel', 'Capture');
-switch choice
-    case 'Capture'
-        img = snapshot(vid);
-    case 'Cancel'
-        return;
+get_image;
+
+while numberOfMeasurements > 1
+    if exitCode ~= true
+        display('Not a good image. Please try again.');
+        waitfor(msgbox('Not a good image. Please try again.'));
+        close all;
+        get_image;
+    else
+        close all;
+        clear vid;
+        return
+    end
 end
 
-%Break down original image into HSV values
-%and seperate hand usingthresholds
-hsvImage = rgb2hsv(img);
-hImage = hsvImage(:,:,1);
-sImage = hsvImage(:,:,2);
-vImage = hsvImage(:,:,3);
-hueMask = (hImage >= hueThresholdLow) & (hImage <= hueThresholdHigh);
-saturationMask = (sImage >= saturationThresholdLow) & (sImage <= saturationThresholdHigh);
-valueMask = (vImage >= valueThresholdLow) & (vImage <= valueThresholdHigh);
-
-%Putting it altogether into one image
-coloredObjectsMask = uint8(hueMask & saturationMask & valueMask);
-imshow(coloredObjectsMask, []);
-%Getting rid of excess pixels, smoothing borders, and filling regions
-smallestAcceptableArea = 100;
-coloredObjectsMask = uint8(bwareaopen(coloredObjectsMask, smallestAcceptableArea));
-structuringElement = strel('disk', 5);
-coloredObjectsMask = imclose(coloredObjectsMask, structuringElement);
-coloredObjectsMask = imfill(logical(coloredObjectsMask), 'holes');
-    
-measurements = regionprops(coloredObjectsMask);
-numberOfMeasurements = size(measurements, 1);
-if numberOfMeasurements > 1
-    display('Not a good image. Please try again.');
-    return;
-else
-    boundingBox = measurements(1).BoundingBox;
-end
-
+boundingBox = measurements(1).BoundingBox;
 croppedHand = imcrop(img, boundingBox);
 binaryHand = imcrop(coloredObjectsMask, boundingBox);
 imshow(binaryHand);
