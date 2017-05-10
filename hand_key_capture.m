@@ -39,8 +39,6 @@ binaryHand = imcrop(coloredObjectsMask, boundingBox);
 imshow(binaryHand);
 
 % mkdir('Images');
-answer = inputdlg('What do you want to call this image?');
-location = strcat('Images/', answer{1});
-imwrite(binaryHand, location, 'jpg');
+imwrite(binaryHand, 'Images/hand_key', 'jpg');
 
 clear vid;

@@ -1,9 +1,9 @@
-clear all;
-close all;
-clc;
+% clear all;
+% close all;
+% clc;
 
-img1 = imread('Images/hand');
-img2 = imread('Images/hand2');
+img1 = im2bw(imread('Images/hand_key'));
+img2 = croppedHand;
 
 %Find greatest width
 if size(img1, 1) > size(img2, 1)

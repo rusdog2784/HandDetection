@@ -4,6 +4,7 @@ close all;
 clc;
 fontSize = 14;
 run = true;
+image_count = 1;
 
 %Thresholds for blue glove color
 hueThresholdLow = 0.4;
@@ -20,12 +21,17 @@ pause(2);
 preview(vid);
 figure;
 
-while (run == true)
+choice = questdlg('Press start to begin hand key capture.', 'Hand Key Required', 'Start', 'Cancel', 'Start');
+switch choice
+    case 'Cancel'
+        return;
+end
+
+while (image_count <= 10)
     
     img = snapshot(vid);
 
-    %Break down original image into HSV values
-    %and seperate hand usingthresholds
+    %Break down original image into HSV values and seperate hand usingthresholds
     hsvImage = rgb2hsv(img);
     hImage = hsvImage(:,:,1);
     sImage = hsvImage(:,:,2);
@@ -44,59 +50,13 @@ while (run == true)
     coloredObjectsMask = imclose(coloredObjectsMask, structuringElement);
     coloredObjectsMask = imfill(logical(coloredObjectsMask), 'holes');
     
-    measurements = regionprops(coloredObjectsMask);
-    numberOfMeasurements = size(measurements, 1);
-    if numberOfMeasurements == 1
-        boundingBox = measurements(1).BoundingBox;
-        croppedHand = uint8(imcrop(coloredObjectsMask, boundingBox));
-        
-        key_image = imread('Images/hand');
-        
-        %Comparing image to key
-        %Find greatest width
-        if size(key_image, 1) > size(croppedHand, 1)
-            width = size(key_image, 1);
-        else
-            width = size(croppedHand, 1);
-        end
-
-        %Find greatest height
-        if size(key_image, 2) > size(croppedHand, 2)
-            height = size(key_image, 2);
-        else
-            height = size(croppedHand, 2);
-        end
-
-        %Resize images using the greatest width and height
-        key_image = imresize(key_image, [width height]);
-        croppedHand = imresize(croppedHand, [width height]);
-
-        %Compare pixels
-        total_pixels = width * height;
-        pixel_count = 0;
-        for r = 1 : width
-            for c = 1 : height
-                if key_image(r,c) == croppedHand(r,c)
-                    pixel_count = pixel_count + 1;
-                end
-            end
-        end
-
-        percent_match = double((pixel_count / total_pixels) * 100);
-        display(percent_match);
-        if percent_match > 70.0
-            run = false;
-        end
-        
-        subplot(1,3,2);
-        imshow(croppedHand, []);
-        
-        subplot(1,3,3);
-        imshow(key_image, []);
-    end
+    location = strcat('Images/hand', num2str(image_count));
+    imwrite(coloredObjectsMask, location, 'jpg');
+    X = ['Hand ', num2str(image_count), ' saved.'];
+    disp(X);
+    image_count = image_count + 1;
 
     %Getting rectangle around hand region
-    subplot(1,3,1);
     imshow(img);
     hold on;
     measurements = regionprops(coloredObjectsMask);
@@ -106,9 +66,18 @@ while (run == true)
         rectangle('position', thisBox(:), 'Edgecolor', 'r');
     end
     hold off;
-%     run = false;
+    pause(0.5);
 end
 
+merge_images;
+image_compare;
 
+if round(percent_match, 0) >= 85.0
+    X = ['Congratulations, its a match'];
+    disp(X);
+else
+    X = ['Woops, try again. Tom sucks'];
+    disp(X);
+end
 
 clear vid;
