@@ -38,7 +38,7 @@ croppedHand = imcrop(img, boundingBox);
 binaryHand = imcrop(coloredObjectsMask, boundingBox);
 imshow(binaryHand);
 
-% mkdir('Images');
 imwrite(binaryHand, 'Images/hand_key', 'jpg');
+disp('Hand key saved.');
 
-clear vid;
+clear all;

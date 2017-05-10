@@ -4,7 +4,8 @@ close all;
 clc;
 fontSize = 14;
 run = true;
-key_image = imread('Images/hand');
+try_again = true;
+image_count = 1;
 
 %Thresholds for blue glove color
 hueThresholdLow = 0.4;
@@ -18,97 +19,76 @@ valueThresholdHigh = 1.0;
 %Create the webcam object
 vid = webcam(1);
 pause(2);
-preview(vid);
 figure;
+preview(vid);
 
-while (run == true)
-    
-    img = snapshot(vid);
-
-    %Break down original image into HSV values
-    %and seperate hand usingthresholds
-    hsvImage = rgb2hsv(img);
-    hImage = hsvImage(:,:,1);
-    sImage = hsvImage(:,:,2);
-    vImage = hsvImage(:,:,3);
-    hueMask = (hImage >= hueThresholdLow) & (hImage <= hueThresholdHigh);
-    saturationMask = (sImage >= saturationThresholdLow) & (sImage <= saturationThresholdHigh);
-    valueMask = (vImage >= valueThresholdLow) & (vImage <= valueThresholdHigh);
-
-    %Putting it altogether into one image
-    coloredObjectsMask = uint8(hueMask & saturationMask & valueMask);
-
-    %Getting rid of excess pixels, smoothing borders, and filling regions
-    smallestAcceptableArea = 100;
-    coloredObjectsMask = uint8(bwareaopen(coloredObjectsMask, smallestAcceptableArea));
-    structuringElement = strel('disk', 4);
-    coloredObjectsMask = imclose(coloredObjectsMask, structuringElement);
-    coloredObjectsMask = imfill(logical(coloredObjectsMask), 'holes');
-    
-    measurements = regionprops(coloredObjectsMask);
-    numberOfMeasurements = size(measurements, 1);
-    if numberOfMeasurements == 1
-        boundingBox = measurements(1).BoundingBox;
-        croppedHand = imcrop(coloredObjectsMask, boundingBox);
-        
-        %Comparing image to key
-        %Find greatest width
-        if size(key_image, 1) > size(croppedHand, 1)
-            width = size(key_image, 1);
-        else
-            width = size(croppedHand, 1);
-        end
-
-        %Find greatest height
-        if size(key_image, 2) > size(croppedHand, 2)
-            height = size(key_image, 2);
-        else
-            height = size(croppedHand, 2);
-        end
-
-        %Resize images using the greatest width and height
-        key_image = imresize(key_image, [width height]);
-        croppedHand = imresize(croppedHand, [width height]);
-
-        %Compare pixels
-        total_pixels = width * height;
-        pixel_count = 0;
-        for r = 1 : width
-            for c = 1 : height
-                if key_image(r,c) == croppedHand(r,c)
-                    pixel_count = pixel_count + 1;
-                end
+while (try_again)
+    choice = questdlg('Press start to begin hand key capture.', 'Hand Key Required', 'Start', 'Cancel', 'Start');
+    switch choice
+        case 'Start'
+            img = snapshot(vid);
+            imshow(img);
+            h = waitbar(0, 'Get ready...');
+            steps = 3;
+            for step = 1 : steps
+                pause(1);
+                waitbar(step/steps);
             end
-        end
-
-        percent_match = double((pixel_count / total_pixels) * 100);
-        display(percent_match);
-        if percent_match > 70.0
-            run = false;
-        end
-        
-        subplot(1,3,2);
-        imshow(croppedHand);
-        
-        subplot(1,3,3);
-        imshow(key_image);
+            close(h)
+        case 'Cancel'
+            return;
     end
 
-    %Getting rectangle around hand region
-    subplot(1,3,1);
-    imshow(img);
-    hold on;
-    measurements = regionprops(coloredObjectsMask);
-    numberOfRegions = size(measurements, 1);
-    for k = 1 : numberOfRegions
-        thisBox = measurements(k).BoundingBox;
-        rectangle('position', thisBox(:), 'Edgecolor', 'r');
+    while (image_count <= 10)
+        img = snapshot(vid);
+
+        %Break down original image into HSV values and seperate hand usingthresholds
+        hsvImage = rgb2hsv(img);
+        hImage = hsvImage(:,:,1);
+        sImage = hsvImage(:,:,2);
+        vImage = hsvImage(:,:,3);
+        hueMask = (hImage >= hueThresholdLow) & (hImage <= hueThresholdHigh);
+        saturationMask = (sImage >= saturationThresholdLow) & (sImage <= saturationThresholdHigh);
+        valueMask = (vImage >= valueThresholdLow) & (vImage <= valueThresholdHigh);
+
+        %Putting it altogether into one image
+        coloredObjectsMask = uint8(hueMask & saturationMask & valueMask);
+
+        %Getting rid of excess pixels, smoothing borders, and filling regions
+        smallestAcceptableArea = 5000;
+        coloredObjectsMask = uint8(bwareaopen(coloredObjectsMask, smallestAcceptableArea));
+        structuringElement = strel('disk', 4);
+        coloredObjectsMask = imclose(coloredObjectsMask, structuringElement);
+        coloredObjectsMask = imfill(logical(coloredObjectsMask), 'holes');
+        
+        location = strcat('Images/hand', num2str(image_count));
+        imwrite(coloredObjectsMask, location, 'jpg');
+    %     X = ['Hand ', num2str(image_count), ' saved.'];
+    %     disp(X);
+        image_count = image_count + 1;
+
+        %Getting rectangle around hand region
+        imshow(img);
+        hold on;
+        for k = 1 : numberOfRegions
+            thisBox = measurements(k).BoundingBox;
+            rectangle('position', thisBox(:), 'Edgecolor', 'r');
+        end
+        hold off;
+        pause(0.5);
     end
-    hold off;
-    pause(1
-%     run = false;
+
+    merge_images;
+    image_compare;
+
+    if round(percent_match, 0) >= 83.0
+        try_again = false;
+        X = ['Congratulations, its a match'];
+        disp(X);
+    else
+        try_again = true;
+        waitfor(msgbox('Sorry, but that is not the correct hand signal. Please try again.'));
+        image_count = 1;
+    end
 end
-
-
-
 clear vid;

@@ -1,7 +1,3 @@
-% clear all;
-% close all;
-% clc;
-
 img1 = im2bw(imread('Images/hand_key'));
 img2 = croppedHand;
 
@@ -37,9 +33,9 @@ end
 percent_match = double((pixel_count / total_pixels) * 100);
 display(percent_match);
 
-figure;
-subplot(1,2,1);
-imshow(img1);
-
-subplot(1,2,2);
-imshow(img2);0
+% figure;
+% subplot(1,2,1);
+% imshow(img1);
+% 
+% subplot(1,2,2);
+% imshow(img2);

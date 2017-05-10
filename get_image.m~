@@ -23,7 +23,7 @@ valueMask = (vImage >= valueThresholdLow) & (vImage <= valueThresholdHigh);
 %Putting it altogether into one image
 coloredObjectsMask = uint8(hueMask & saturationMask & valueMask);
 %Getting rid of excess pixels, smoothing borders, and filling regions
-smallestAcceptableArea = 5000;
+smallestAcceptableArea = 200;
 coloredObjectsMask = uint8(bwareaopen(coloredObjectsMask, smallestAcceptableArea));
 structuringElement = strel('disk', 5);
 coloredObjectsMask = imclose(coloredObjectsMask, structuringElement);

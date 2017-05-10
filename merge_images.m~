@@ -15,7 +15,7 @@ average = (img1 + img2 + img3 + img4 + img5 + img6 + img7 + img8 + img9 + img10)
 threshold = 0.4;
 final_image = (average >= threshold);
 
-smallestAcceptableArea = 5000;
+smallestAcceptableArea = 300;
 final_image = uint8(bwareaopen(final_image, smallestAcceptableArea));
 structuringElement = strel('disk', structuring_value);
 final_image = imclose(final_image, structuringElement);
@@ -27,17 +27,14 @@ if numberOfMeasurements == 1
     boundingBox = measurements(1).BoundingBox;
     croppedHand = imcrop(final_image, boundingBox);
 else
-    while (numberOfMeasurements > 1 && structuring_value < 12)
-        X = ['Increasing structuring element value...', num2str(structuring_value)];
-        disp(X);
-        structuring_value = structuring_value + 1;
+    while (numberOfMeasurements > 1 & stru)
+        disp('Increasing structuring element value by 2...');
+        structuring_value = structuring_value + 2;
         structuringElement = strel('disk', structuring_value);
         final_image = imclose(final_image, structuringElement);
         measurements = regionprops(final_image);
         numberOfMeasurements = size(measurements, 1);
     end
     
-    if structuring_value >= 12 && numberOfMeasurements > 1
-        msgbox('Sorry, but something went wrong with the captured images.');
-    end
+    msgbox('Sorry, but something went wrong with the captured images.');
 end
